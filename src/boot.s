@@ -32,14 +32,21 @@ ipl:
 
         mov     [BOOT.DRIVE], dl    ;save boot drive. BIOS saves drive num to dl
 
-        cdecl   putc, word 'X'
-        cdecl   putc, word 'Y'
-        cdecl   putc, word 'Z'
+        ;--------------------
+        ; display string
+        ;--------------------
+        cdecl   puts, .s0
 
         ;--------------------
         ; loading end 
         ;--------------------
         jmp     $
+
+        ;--------------------
+        ; data
+        ;--------------------
+.s0     db      "Booting...", 0x0A, 0x0D, 0
+
 ALIGN 2, db 0
 BOOT:
 .DRIVE:         dw  0       ; drive number
@@ -48,6 +55,7 @@ BOOT:
 ;       Modules
 ;************************************************************
 %include    "src/modules/real/putc.s"
+%include    "src/modules/real/puts.s"
 
 ; End of first 512bytes
         times 510 - ($ - $$) db 0x00
