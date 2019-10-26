@@ -38,6 +38,30 @@ ipl:
         cdecl   puts, .s0
 
         ;--------------------
+        ; display numbers
+        ;--------------------
+        cdecl   itoa, 8086, .s1, 8, 10, 0b0001 ; "    8086"
+        cdecl   puts, .s1
+
+        cdecl   itoa, 8086, .s1, 8, 10, 0b0011 ; "+   8086"
+        cdecl   puts, .s1
+
+        cdecl   itoa, -8086, .s1, 8, 10, 0b0001 ; "-   8086"
+        cdecl   puts, .s1
+
+        cdecl   itoa, -1, .s1, 8, 10, 0b0001 ; "-      1"
+        cdecl   puts, .s1
+
+        cdecl   itoa, -1, .s1, 8, 10, 0b0000 ; "   65535"
+        cdecl   puts, .s1
+
+        cdecl   itoa, -1, .s1, 8, 16, 0b0000 ; "   FFFF"
+        cdecl   puts, .s1
+
+        cdecl   itoa, 12, .s1, 8, 2, 0b0100 ; "00001100"
+        cdecl   puts, .s1
+
+        ;--------------------
         ; loading end 
         ;--------------------
         jmp     $
@@ -46,6 +70,7 @@ ipl:
         ; data
         ;--------------------
 .s0     db      "Booting...", 0x0A, 0x0D, 0
+.s1     db      "--------", 0x0A, 0x0D, 0
 
 ALIGN 2, db 0
 BOOT:
@@ -56,6 +81,7 @@ BOOT:
 ;************************************************************
 %include    "src/modules/real/putc.s"
 %include    "src/modules/real/puts.s"
+%include    "src/modules/real/itoa.s"
 
 ; End of first 512bytes
         times 510 - ($ - $$) db 0x00
