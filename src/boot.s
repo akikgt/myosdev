@@ -11,7 +11,7 @@ entry:
         ; IPL (Initial Program Loader)
         ;--------------------
 ipl:
-        cli     ; forbid interupt
+        cli     ; forbid interuption
 
         mov     ax, 0x0000
         mov     ds, ax
@@ -19,9 +19,14 @@ ipl:
         mov     ss, ax
         mov     sp, BOOT_LOAD
 
-        sti     ; permit interupt
+        sti     ; permit interuption
 
         mov     [BOOT.DRIVE], dl    ;save boot drive. BIOS saves drive num to dl
+
+        mov     al, 'A'
+        mov     ah, 0x0E
+        mov     bx, 0x0000
+        int     0x10        
 
         ;--------------------
         ; loading end 
