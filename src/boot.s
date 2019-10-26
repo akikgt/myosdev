@@ -86,8 +86,11 @@ BOOT:
 ;       Information from real mode
 ;************************************************************
 FONT:
-.seg    dw      0
-.off    dw      0
+.seg:    dw      0
+.off:    dw      0
+ACPI_DATA:
+.adr:    dd      0
+.len:    dd      0
 
 ;************************************************************
 ;       Modules (after first 512 bytes)
@@ -95,6 +98,7 @@ FONT:
 %include    "src/modules/real/itoa.s"
 %include    "src/modules/real/get_drive_param.s"
 %include    "src/modules/real/get_font_adr.s"
+%include    "src/modules/real/get_mem_info.s"
 
 ;************************************************************
 ;       2nd booting stage
@@ -147,9 +151,24 @@ stage_3rd:
 
         cdecl   get_font_adr, FONT
 
+        ; print font address
         cdecl   itoa, word [FONT.seg], .p1, 4, 16, 0b0100
         cdecl   itoa, word [FONT.off], .p2, 4, 16, 0b0100
         cdecl   puts, .s1
+
+        ; get memory information and display it
+        cdecl   get_mem_info
+
+        mov     eax, [ACPI_DATA.adr]
+        cmp     eax, 0
+        je     .10E
+
+        cdecl   itoa, ax, .p4, 4, 16, 0b0100
+        shr     eax, 16
+        cdecl   itoa, ax, .p3, 4, 16, 0b0100
+
+        cdecl   puts, .s2
+.10E:
 
         ; end of processing
         jmp     $
@@ -160,6 +179,10 @@ stage_3rd:
 .p1     db      "ZZZZ:"
 .p2     db      "ZZZZ", 0x0A, 0x0D, 0 
         db      0x0A, 0x0D, 0
+
+.s2:	db	" ACPI data="
+.p3:	db	"ZZZZ"
+.p4:	db	"ZZZZ", 0x0A, 0x0D, 0
 
 ;************************************************************
 ;       padding( this file size is 8k bytes)
