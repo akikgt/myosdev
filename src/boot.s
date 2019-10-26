@@ -1,9 +1,9 @@
-        BOOT_LOAD       equ     0x7c00
-        ORG         BOOT_LOAD
 ;************************************************************
 ;       MACRO
 ;************************************************************
+%include    "src/includes/define.s"
 %include    "src/includes/macro.s"
+        ORG         BOOT_LOAD
 
 ;************************************************************
 ;       Entry Point
@@ -30,7 +30,7 @@ ipl:
 
         sti     ; permit interuption
 
-        mov     [BOOT.DRIVE], dl    ;save boot drive. BIOS saves drive num to dl
+        mov     [BOOT + drive.no], dl    ;save boot drive. BIOS saves drive num to dl
 
         ;--------------------
         ; display string
@@ -38,16 +38,14 @@ ipl:
         cdecl   puts, .s0
 
         ;--------------------
-        ; read next 512 bytes
-        ;--------------------
-        mov     ah, 0x02            ; read command
-        mov     al, 1               ; number of sectors to be read
-        mov     cx, 0x0002          ; cylinder / sector
-        mov     dh, 0x00            ; head
-        mov     dl, [BOOT.DRIVE]    ; drive number
-        mov     bx, 0x7c00 + 512
-        int     0x13 
-.10Q:   jnc     .10E                ; if error, CF = true
+        ; read all the rest of sectors
+        mov     bx, BOOT_SECT - 1
+        mov     cx, BOOT_LOAD + SECT_SIZE
+
+        cdecl   read_chs, BOOT, bx, cx
+
+        cmp     ax, bx
+.10Q:   jz     .10E                ; if error, CF = true
 .10T:   cdecl   puts, .e0       
         call    reboot
 .10E:
@@ -65,13 +63,18 @@ ipl:
 
 ALIGN 2, db 0
 BOOT:
-.DRIVE:         dw  0       ; drive number
-
+    istruc  drive           ; instace of struct = istruc 
+        at  drive.no,       dw  0  
+        at  drive.cyln,     dw  0  
+        at  drive.head,     dw  0  
+        at  drive.sect,     dw  2  
+    iend
 ;************************************************************
 ;       Modules
 ;************************************************************
 %include    "src/modules/real/puts.s"
 %include    "src/modules/real/reboot.s"
+%include    "src/modules/real/read_chs.s"
 
 ; End of first 512bytes
         times 510 - ($ - $$) db 0x00
@@ -91,4 +94,4 @@ stage_2:
 ;************************************************************
 ;       padding( this file size is 8k bytes)
 ;************************************************************
-        times(1024 * 8) - ($ - $$)      db  0      ; 8k bytes
+        times BOOT_SIZE - ($ - $$)      db  0      ; padding
