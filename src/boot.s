@@ -3,7 +3,7 @@
 ;************************************************************
 ;       MACRO
 ;************************************************************
-; %include    "include/macros.s"
+%include    "src/includes/macro.s"
 
 ;************************************************************
 ;       Entry Point
@@ -32,15 +32,9 @@ ipl:
 
         mov     [BOOT.DRIVE], dl    ;save boot drive. BIOS saves drive num to dl
 
-        push    word 'A'
-        call    putc
-        add     sp, 2
-        push    word 'B'
-        call    putc
-        add     sp, 2
-        push    word 'C'
-        call    putc
-        add     sp, 2
+        cdecl   putc, word 'X'
+        cdecl   putc, word 'Y'
+        cdecl   putc, word 'Z'
 
         ;--------------------
         ; loading end 
