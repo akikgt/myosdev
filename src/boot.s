@@ -37,29 +37,31 @@ ipl:
         ;--------------------
         cdecl   puts, .s0
 
+        ; cdecl   reboot
+
         ;--------------------
         ; display numbers
         ;--------------------
-        cdecl   itoa, 8086, .s1, 8, 10, 0b0001 ; "    8086"
-        cdecl   puts, .s1
+        ; cdecl   itoa, 8086, .s1, 8, 10, 0b0001 ; "    8086"
+        ; cdecl   puts, .s1
 
-        cdecl   itoa, 8086, .s1, 8, 10, 0b0011 ; "+   8086"
-        cdecl   puts, .s1
+        ; cdecl   itoa, 8086, .s1, 8, 10, 0b0011 ; "+   8086"
+        ; cdecl   puts, .s1
 
-        cdecl   itoa, -8086, .s1, 8, 10, 0b0001 ; "-   8086"
-        cdecl   puts, .s1
+        ; cdecl   itoa, -8086, .s1, 8, 10, 0b0001 ; "-   8086"
+        ; cdecl   puts, .s1
 
-        cdecl   itoa, -1, .s1, 8, 10, 0b0001 ; "-      1"
-        cdecl   puts, .s1
+        ; cdecl   itoa, -1, .s1, 8, 10, 0b0001 ; "-      1"
+        ; cdecl   puts, .s1
 
-        cdecl   itoa, -1, .s1, 8, 10, 0b0000 ; "   65535"
-        cdecl   puts, .s1
+        ; cdecl   itoa, -1, .s1, 8, 10, 0b0000 ; "   65535"
+        ; cdecl   puts, .s1
 
-        cdecl   itoa, -1, .s1, 8, 16, 0b0000 ; "   FFFF"
-        cdecl   puts, .s1
+        ; cdecl   itoa, -1, .s1, 8, 16, 0b0000 ; "   FFFF"
+        ; cdecl   puts, .s1
 
-        cdecl   itoa, 12, .s1, 8, 2, 0b0100 ; "00001100"
-        cdecl   puts, .s1
+        ; cdecl   itoa, 12, .s1, 8, 2, 0b0100 ; "00001100"
+        ; cdecl   puts, .s1
 
         ;--------------------
         ; loading end 
@@ -82,6 +84,7 @@ BOOT:
 %include    "src/modules/real/putc.s"
 %include    "src/modules/real/puts.s"
 %include    "src/modules/real/itoa.s"
+%include    "src/modules/real/reboot.s"
 
 ; End of first 512bytes
         times 510 - ($ - $$) db 0x00
