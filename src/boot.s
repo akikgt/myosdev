@@ -76,15 +76,25 @@ BOOT:
 %include    "src/modules/real/reboot.s"
 %include    "src/modules/real/read_chs.s"
 
+;************************************************************
 ; End of first 512bytes
+;************************************************************
         times 510 - ($ - $$) db 0x00
         db  0x55, 0xAA
+
+;************************************************************
+;       Information from real mode
+;************************************************************
+FONT:
+.seg    dw      0
+.off    dw      0
 
 ;************************************************************
 ;       Modules (after first 512 bytes)
 ;************************************************************
 %include    "src/modules/real/itoa.s"
 %include    "src/modules/real/get_drive_param.s"
+%include    "src/modules/real/get_font_adr.s"
 
 ;************************************************************
 ;       2nd booting stage
@@ -112,8 +122,8 @@ stage_2:
         cdecl   itoa, ax, .p4, 2, 16, 0b0100
         cdecl   puts, .s1
 
-        ; end of processing
-        jmp     $
+        jmp     stage_3rd
+
 
         ;--------------------
         ; data
@@ -127,6 +137,29 @@ stage_2:
 .p4     db      "  ", 0x0A, 0x0D, 0
 
 .e0     db      "Can't get drive parameter.", 0
+
+
+;************************************************************
+;       3rd booting stage
+;************************************************************
+stage_3rd:
+        cdecl   puts, .s0
+
+        cdecl   get_font_adr, FONT
+
+        cdecl   itoa, word [FONT.seg], .p1, 4, 16, 0b0100
+        cdecl   itoa, word [FONT.off], .p2, 4, 16, 0b0100
+        cdecl   puts, .s1
+
+        ; end of processing
+        jmp     $
+
+.s0     db      "3rd stage...", 0x0A, 0x0D, 0
+
+.s1     db      " Font Address="
+.p1     db      "ZZZZ:"
+.p2     db      "ZZZZ", 0x0A, 0x0D, 0 
+        db      0x0A, 0x0D, 0
 
 ;************************************************************
 ;       padding( this file size is 8k bytes)
