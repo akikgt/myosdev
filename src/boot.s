@@ -99,6 +99,7 @@ ACPI_DATA:
 %include    "src/modules/real/get_drive_param.s"
 %include    "src/modules/real/get_font_adr.s"
 %include    "src/modules/real/get_mem_info.s"
+%include    "src/modules/real/kbc.s"
 
 ;************************************************************
 ;       2nd booting stage
@@ -170,8 +171,8 @@ stage_3rd:
         cdecl   puts, .s2
 .10E:
 
-        ; end of processing
-        jmp     $
+        ; jump to stage 4
+        jmp     stage_4
 
 .s0     db      "3rd stage...", 0x0A, 0x0D, 0
 
@@ -184,6 +185,40 @@ stage_3rd:
 .p3:	db	"ZZZZ"
 .p4:	db	"ZZZZ", 0x0A, 0x0D, 0
 
+;************************************************************
+;       4th booting stage
+;************************************************************
+stage_4:
+
+        cdecl   puts, .s0
+
+        ; enable A20 gate
+        cli
+
+        cdecl   KBC_Cmd_Write, 0xAD
+
+        cdecl   KBC_Cmd_Write, 0xD0     ; read command
+        cdecl   KBC_Data_Read, .key
+
+        mov     bl, [.key]
+        or      bl, 0x02
+
+        cdecl   KBC_Cmd_Write, 0xD1     ; write command
+        cdecl   KBC_Data_Write, bx
+
+        cdecl   KBC_Cmd_Write, 0xAE
+
+        sti
+
+        cdecl   puts, .s1
+
+
+        jmp     $
+
+.s0:    db      "4th stage...", 0x0A, 0x0D, 0
+.s1:    db      " A20 Gate Enabled", 0x0A, 0x0D, 0
+
+.key:   dw      0
 ;************************************************************
 ;       padding( this file size is 8k bytes)
 ;************************************************************
