@@ -37,42 +37,31 @@ ipl:
         ;--------------------
         cdecl   puts, .s0
 
-        ; cdecl   reboot
+        ;--------------------
+        ; read next 512 bytes
+        ;--------------------
+        mov     ah, 0x02            ; read command
+        mov     al, 1               ; number of sectors to be read
+        mov     cx, 0x0002          ; cylinder / sector
+        mov     dh, 0x00            ; head
+        mov     dl, [BOOT.DRIVE]    ; drive number
+        mov     bx, 0x7c00 + 512
+        int     0x13 
+.10Q:   jnc     .10E                ; if error, CF = true
+.10T:   cdecl   puts, .e0       
+        call    reboot
+.10E:
 
         ;--------------------
-        ; display numbers
+        ; go to next stage
         ;--------------------
-        ; cdecl   itoa, 8086, .s1, 8, 10, 0b0001 ; "    8086"
-        ; cdecl   puts, .s1
-
-        ; cdecl   itoa, 8086, .s1, 8, 10, 0b0011 ; "+   8086"
-        ; cdecl   puts, .s1
-
-        ; cdecl   itoa, -8086, .s1, 8, 10, 0b0001 ; "-   8086"
-        ; cdecl   puts, .s1
-
-        ; cdecl   itoa, -1, .s1, 8, 10, 0b0001 ; "-      1"
-        ; cdecl   puts, .s1
-
-        ; cdecl   itoa, -1, .s1, 8, 10, 0b0000 ; "   65535"
-        ; cdecl   puts, .s1
-
-        ; cdecl   itoa, -1, .s1, 8, 16, 0b0000 ; "   FFFF"
-        ; cdecl   puts, .s1
-
-        ; cdecl   itoa, 12, .s1, 8, 2, 0b0100 ; "00001100"
-        ; cdecl   puts, .s1
-
-        ;--------------------
-        ; loading end 
-        ;--------------------
-        jmp     $
+        jmp     stage_2
 
         ;--------------------
         ; data
         ;--------------------
 .s0     db      "Booting...", 0x0A, 0x0D, 0
-.s1     db      "--------", 0x0A, 0x0D, 0
+.e0     db      "Error:sector read", 0
 
 ALIGN 2, db 0
 BOOT:
@@ -81,11 +70,25 @@ BOOT:
 ;************************************************************
 ;       Modules
 ;************************************************************
-%include    "src/modules/real/putc.s"
 %include    "src/modules/real/puts.s"
-%include    "src/modules/real/itoa.s"
 %include    "src/modules/real/reboot.s"
 
 ; End of first 512bytes
         times 510 - ($ - $$) db 0x00
         db  0x55, 0xAA
+
+
+;************************************************************
+;       2nd booting stage
+;************************************************************
+stage_2:
+        cdecl   puts, .s0
+
+        jmp     $
+
+.s0     db      "2nd stage...", 0x0A, 0x0D, 0
+
+;************************************************************
+;       padding( this file size is 8k bytes)
+;************************************************************
+        times(1024 * 8) - ($ - $$)      db  0      ; 8k bytes
